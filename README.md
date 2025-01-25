@@ -33,7 +33,7 @@ The project currently includes two classic methods for action selection in multi
 
 - Formula:
 
-    ![argmax_formula](Reinforcement-Learning/Asset/RL_argmax_formula.jpg)
+    ![argmax_formula](/Asset/RL_argmax_formula.jpg)
 
 - Where:
 
