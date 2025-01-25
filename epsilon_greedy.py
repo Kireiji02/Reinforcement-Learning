@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     #------------------------------------Initilization------------------------------------#
     steps = 10000 #steps per iteration
-    iteration = 10
+    iterations = 10
 
     bandits = []
     reward_matrix = [[5,0.9],[100,0.1],[50,0.2],[1,1]] # [reward, probability]
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     #--------------------------------------Simulation--------------------------------------#
 
-    for i in range(iteration):
+    for i in range(iterations):
 
         result, weight = agent.simulate()
 
