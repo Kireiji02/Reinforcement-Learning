@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import random
+import math
 
 #------------------------------------Classes construction------------------------------------#
 
@@ -8,24 +9,31 @@ class Bandit:
         self.n = n
         self.reward = r[0]
         self.weight = r[1]
-    
+
 class Agent:
     def __init__(self,a,t):
         self.action = a # Bandit class
-        self.policy = [0.0 for _ in range(len(a))]
+        self.policy = [1.0/len(a) for _ in range(len(a))]
         self.action_value = [[0,0] for _ in range(len(a))] # [action count, cumulative reward]
         self.step = t
-        self.epsilon = 1.0
-        self.mode = 0 # 0 = exploration, 1 = exploitation
+        self.upper_confidence = [1.0 for _ in range(len(a))]
+
+        self.mode = 0
 
         #for output
-        self.simulated_rewards = [] # [action, recieved reward, mode]
+        self.simulated_rewards = [] # [action, recieved reward]
         self.cumulative_rewards = [[0] for _ in range(len(a))]  # Track cumulative reward for each bandit
 
+    def normalize(self, val):
+        total = sum(val)
+        if total != 0:
+            return [p / total for p in val]
+        else:
+            return [1.0 / len(val) for _ in val]
 
-    def normalize(self):
+    def normalize_q(self, q):
         normal = []
-        for count,cumulative_reward in self.action_value:
+        for count,cumulative_reward in q:
             if count != 0:
                 normal.append(cumulative_reward/count)
             else:
@@ -33,26 +41,30 @@ class Agent:
 
         total = sum(normal)
         if total != 0:
-            self.policy = [p / total for p in normal]
+            return [p / total for p in normal]
         else:
-            self.policy = [1.0 / len(self.action_value) for _ in self.action_value]
+            return [1.0 / len(q) for _ in q]
 
     def simulate(self):
         for t in range(self.step):
-            # Decaying epsilon value
-            self.epsilon = max(0.1, self.epsilon * 0.99)
-            self.mode = 0 if random.random() < self.epsilon else 1
-
+            
             # Select an action based on policy weight at timestep t
             action_t = random.choices(
                 self.action, 
-                weights= [1.0/len(self.action) for _ in range(len(self.action))] if self.mode == 0 else self.policy, 
+                weights= self.policy, 
                 k=1
-            )[0] 
+            )[0]
 
-            #return a reward for that action at timestep t and mode
+            # Update the uppder confidence bound
+            for i in range(len(self.action)):
+                if self.action_value[i][0] == 0:
+                    self.upper_confidence[i] = 1.0
+                else:
+                    self.upper_confidence[i] = math.sqrt(math.log(t+1) / (2 * self.action_value[i][0]))
+
+            # Return a reward for that action at timestep t and mode
             reward = random.choices([0, action_t.reward], [1.0 - action_t.weight, action_t.weight], k=1)[0]
-            self.simulated_rewards.append([action_t.n, reward, self.mode])
+            self.simulated_rewards.append([action_t.n, reward])
 
             # Update cumulative rewards for the selected bandit
             self.cumulative_rewards[action_t.n].append(self.cumulative_rewards[action_t.n][-1] + reward)
@@ -62,12 +74,11 @@ class Agent:
                 if i != action_t.n:
                     self.cumulative_rewards[i].append(self.cumulative_rewards[i][-1])
 
-            
-            # count actions and add a reward to the action value
+            # Count actions and add a reward to the action value
             self.action_value[action_t.n] = [x+y for x,y in zip(self.action_value[action_t.n],[1,self.simulated_rewards[-1][1]])]
 
-            #normalize
-            self.normalize()
+            # Normalize
+            self.policy = self.normalize([q + u for q, u in zip(self.normalize_q(self.action_value), self.normalize(self.upper_confidence))])
 
         return self.simulated_rewards, self.policy
         
@@ -76,25 +87,24 @@ class Agent:
 if __name__ == "__main__":
 
     #------------------------------------Initilization------------------------------------#
-    steps = 10000 #steps per iteration
+
+    steps = 10000 # Steps per iteration
     iterations = 10
 
-    bandits = []
     reward_matrix = [[5,0.9],[100,0.1],[50,0.2],[1,1]] # [reward, probability]
     # reward_matrix = [[1000,0.01],[500,0.02],[100,0.1],[50,0.2],[20,0.5]]
 
     bandits = [Bandit(i, reward_matrix[i]) for i in range(len(reward_matrix))]
     agent = Agent(bandits,steps)
 
-    weight = [1.0 / len(bandits) for _ in range(len(bandits))] #pre-initialize for edge cases (for output only not computed)
+    weight = [1.0 / len(bandits) for _ in range(len(bandits))] # Pre-initialize for edge cases (for output only not computed)
 
     #--------------------------------------Simulation--------------------------------------#
-
+    
     for i in range(iterations):
-
         result, weight = agent.simulate()
 
-        #----------------------------------------Result----------------------------------------#
+    #----------------------------------------Result----------------------------------------#
 
     action_counts = [val[0] for val in agent.action_value]
     average_rewards = [val[1] / val[0] if val[0] > 0 else 0 for val in agent.action_value]
@@ -109,6 +119,6 @@ if __name__ == "__main__":
 
     plt.xlabel("Timestep")
     plt.ylabel("Cumulative Reward")
-    plt.title("Cumulative Reward for Each Bandit Over Time - Decaying Epsilon Greedy Method")
+    plt.title("Cumulative Reward for Each Bandit Over Time - Upper Confidence Bound")
     plt.legend()
     plt.show()

@@ -29,13 +29,11 @@ if __name__ == "__main__":
     #------------------------------------Initilization------------------------------------#
 
     steps = 10
-    bandits = []
+
     reward_matrix = [[5,0.9],[100,0.1],[50,0.2]] # [reward, probability]
     # reward_matrix = [[1000,0.01],[500,0.02],[100,0.1],[50,0.2],[20,0.5]]
 
-    for i in range(len(reward_matrix)):
-        bandits.append(Bandit(i+1,reward_matrix[i]))
-
+    bandits = [Bandit(i, reward_matrix[i]) for i in range(len(reward_matrix))]
     agent = Agent(bandits,steps)
 
     #--------------------------------------Simulation--------------------------------------#
