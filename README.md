@@ -195,3 +195,7 @@ This continues the trend of excessive exploration.
 **Exploaration rate = 1.5**
 
 An exploration value of 1.5 is the most optimal for the current reward matrix and timesteps.
+
+### Summary
+
+Decaying Epsilon-Greedy (DEG) and Upper Confidence Bound (UCB) are two exploration strategies used in multi-armed bandit problems and reinforcement learning. DEG relies on an epsilon parameter that decreases over time, shifting the agent from an exploration phase, where it selects actions randomly, to an exploitation phase, where it chooses the best-known action. This approach is simple and effective but requires careful tuning of the decay rate to avoid premature exploitation or excessive exploration. In contrast, UCB uses a confidence-based approach, assigning an exploration bonus to actions that have been chosen less frequently, ensuring they are periodically revisited. This method balances exploration and exploitation dynamically, making it well-suited for environments where rewards change over time. While DEG provides a straightforward way to control exploration, UCB optimally selects actions based on uncertainty, often leading to more efficient learning.

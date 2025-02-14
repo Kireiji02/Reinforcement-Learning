@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     steps = 10000 # Steps per iteration
     iterations = 10
-    explore_rate = 3
+    explore_rate = 1.5
 
     reward_matrix = [[5,0.9],[100,0.11],[50,0.2],[1,1.0]] # [reward, probability]
     # reward_matrix = [[1000,0.01],[500,0.02],[100,0.1],[50,0.2],[20,0.5]]
