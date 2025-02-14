@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import random
 
 #------------------------------------Classes construction------------------------------------#
@@ -16,11 +17,13 @@ class Agent:
         self.action_value = [[0,0] for _ in range(len(a))] # [action count, cumulative reward]
         self.step = t
         self.epsilon = 1.0
+        self.decay_rate = 4.0 # Around 2.0 - 5.0
         self.mode = 0 # 0 = exploration, 1 = exploitation
 
         #for output
         self.simulated_rewards = [] # [action, recieved reward, mode]
         self.cumulative_rewards = [[0] for _ in range(len(a))]  # Track cumulative reward for each bandit
+        self.epsilon_values = [self.epsilon]  # Store epsilon values over time
 
     def normalize_q(self, q):
         normal = []
@@ -39,7 +42,8 @@ class Agent:
     def simulate(self):
         for _ in range(self.step):
             # Decaying epsilon value
-            self.epsilon = max(0.1, self.epsilon * 0.99)
+            self.epsilon = max(0.1, self.epsilon * (1.0 - (10 ** - self.decay_rate)))
+            self.epsilon_values.append(self.epsilon)
             self.mode = 0 if random.random() < self.epsilon else 1
 
             # Select an action based on q_value weight at timestep t
@@ -104,11 +108,26 @@ if __name__ == "__main__":
         print(f"Action {i + 1}: Count = {count}, Average Reward = {avg_reward:.2f}, Weight = {weight[i]:.4f}")
     print('-------------------------------------------')
 
-    for i, cumulative_reward in enumerate(agent.cumulative_rewards):
-            plt.plot(range(len(cumulative_reward)), cumulative_reward, label=f"Bandit {i + 1}")
+     # Create a single figure with two subplots (stacked vertically)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
 
-    plt.xlabel("Timestep")
-    plt.ylabel("Cumulative Reward")
-    plt.title("Cumulative Reward for Each Bandit Over Time - Decaying Epsilon Greedy Method")
-    plt.legend()
+    # Plot cumulative reward for each bandit on the first subplot
+    for i, cumulative_reward in enumerate(agent.cumulative_rewards):
+        ax1.plot(range(len(cumulative_reward)), cumulative_reward, label=f"Bandit {i + 1}")
+    ax1.set_xlabel("Timestep")
+    ax1.set_ylabel("Cumulative Reward")
+    ax1.set_title("Cumulative Reward for Each Bandit Over Time")
+    ax1.legend()
+    ax1.grid(True)
+
+    # Plot epsilon decay on the second subplot
+    ax2.plot(range(len(agent.epsilon_values)), agent.epsilon_values, label="Epsilon Decay", color='red', linestyle='dashed')
+    ax2.set_xlabel("Timestep")
+    ax2.set_ylabel("Epsilon Value")
+    ax2.set_title("Epsilon Decay Over Time")
+    ax2.legend()
+    ax2.grid(True)
+
+    # Adjust layout and show the plots
+    plt.tight_layout()
     plt.show()
