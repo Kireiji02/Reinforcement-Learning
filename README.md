@@ -70,6 +70,7 @@ Parameters to change: `steps, iterations and reward matrix`
 ```py
 steps = 10000 #steps per iteration
 iterations = 10
+decay_rate = 4.0 # Around 2.0 - 5.0
 reward_matrix = [[5,0.9],[100,0.1],[50,0.2],[1,1]] # [reward, probability]
 ```
 
@@ -79,6 +80,6 @@ Parameters to change: `steps, iterations, explore and reward matrix`
 ```py
 steps = 10000 #steps per iteration
 iterations = 10
-explore = 2
+explore_rate = 2
 reward_matrix = [[5,0.9],[100,0.1],[50,0.2],[1,1]] # [reward, probability]
 ```

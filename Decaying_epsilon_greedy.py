@@ -11,13 +11,13 @@ class Bandit:
         self.weight = r[1]
      
 class Agent:
-    def __init__(self,a,t):
+    def __init__(self,a,t,d):
         self.action = a # Bandit class
         self.q_value = [0.0 for _ in range(len(a))]
         self.action_value = [[0,0] for _ in range(len(a))] # [action count, cumulative reward]
         self.step = t
         self.epsilon = 1.0
-        self.decay_rate = 4.0 # Around 2.0 - 5.0
+        self.decay_rate = d
         self.mode = 0 # 0 = exploration, 1 = exploitation
 
         #for output
@@ -84,12 +84,13 @@ if __name__ == "__main__":
     #------------------------------------Initilization------------------------------------#
     steps = 10000 # Steps per iteration
     iterations = 10
+    decay_rate = 4.0 # Around 2.0 - 5.0
 
     reward_matrix = [[5,0.9],[100,0.11],[50,0.2],[1,1]] # [reward, probability]
     # reward_matrix = [[1000,0.01],[500,0.02],[100,0.1],[50,0.2],[20,0.5]]
 
     bandits = [Bandit(i, reward_matrix[i]) for i in range(len(reward_matrix))]
-    agent = Agent(bandits,steps)
+    agent = Agent(bandits,steps,decay_rate)
 
     weight = [1.0 / len(bandits) for _ in range(len(bandits))] # Pre-initialize for edge cases (for output only not computed)
 
